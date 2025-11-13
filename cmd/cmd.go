@@ -53,16 +53,29 @@ func init() {
 			Description:	"Shows information about a pokemon which you already caught",
 			Callback:		CommandInspect,
 		},
+		"pokedex": {
+			Name:			"pokedex",
+			Description:	"Shows all caught pokemons in your pokedex",
+			Callback:		CommandPokedex,
+		},
 	}
 }
 
 func CommandExit(cfg *api.Config, args []string) error {
+	if len(args) != 0 {
+		return fmt.Errorf("invalid argument: Try exit")
+	}
+
 	fmt.Println("Closing the Pokedex... Goodbye!")
 	os.Exit(0)
 	return nil
 }
 
 func CommandHelp(cfg *api.Config, args []string) error {
+	if len(args) != 0 {
+		return fmt.Errorf("invalid argument: Try help")
+	}
+
 	fmt.Println("\nWelcome to the Pokedex!")
 	fmt.Println("Usage:")
 
@@ -76,6 +89,10 @@ func CommandHelp(cfg *api.Config, args []string) error {
 }
 
 func CommandMap(cfg *api.Config, args []string) error {
+	if len(args) != 0 {
+		return fmt.Errorf("invalid argument: Try map")
+	}
+
 	locationData, err := api.GetLocationAreas(true, cfg)
 	if err != nil {
 		return err
@@ -89,6 +106,10 @@ func CommandMap(cfg *api.Config, args []string) error {
 }
 
 func CommandMapB(cfg *api.Config, args []string) error {
+	if len(args) != 0 {
+		return fmt.Errorf("invalid argument: Try mapb")
+	}
+
 	locationData, err := api.GetLocationAreas(false, cfg)
 	if err != nil {
 		return err
@@ -183,12 +204,30 @@ func CommandInspect(cfg *api.Config, args []string) error {
 
 	fmt.Println("Stats:")
 	for _, stat := range pokemon.Stats {
-		fmt.Printf("  -%v: %d\n", stat.Stat.Name, stat.BaseStat)
+		fmt.Printf("  -%v: %v\n", stat.Stat.Name, stat.BaseStat)
 	}
 
 	fmt.Println("Types:")
 	for _, t := range pokemon.Types {
-		fmt.Printf("  - %s\n", t.Type.Name)
+		fmt.Printf("  - %v\n", t.Type.Name)
+	}
+
+	return nil
+}
+
+func CommandPokedex(cfg *api.Config, args []string) error {
+	if len(args) != 0 {
+		return fmt.Errorf("invalid argument: Try pokedex")
+	}
+
+	if len(cfg.Pokedex) < 1 {
+		fmt.Printf("Your pokedex is empty :(\n")
+		return nil
+	}
+
+	fmt.Println("Your Pokedex:")
+	for _, p := range cfg.Pokedex {
+		fmt.Printf("  - %v\n", p.Name)
 	}
 
 	return nil
