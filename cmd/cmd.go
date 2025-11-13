@@ -9,7 +9,7 @@ import (
 type CliCommand struct {
 	Name		string
 	Description	string
-	Callback	func(cfg *api.Config) error
+	Callback	func(cfg *api.Config, args []string) error
 }
 
 var Cmds map[string]CliCommand
@@ -36,16 +36,21 @@ func init() {
 			Description:	"Displays the names of previous 20 location areas",
 			Callback:		CommandMapB,
 		},
+		"explore": {
+			Name:			"explore",
+			Description:	"Displays list of pokemons avaliable in given location area",
+			Callback:		CommandExplore,
+		},
 	}
 }
 
-func CommandExit(cfg *api.Config) error {
+func CommandExit(cfg *api.Config, args []string) error {
 	fmt.Println("Closing the Pokedex... Goodbye!")
 	os.Exit(0)
 	return nil
 }
 
-func CommandHelp(cfg *api.Config) error {
+func CommandHelp(cfg *api.Config, args []string) error {
 	fmt.Println("\nWelcome to the Pokedex!")
 	fmt.Println("Usage:")
 
@@ -55,7 +60,7 @@ func CommandHelp(cfg *api.Config) error {
 	return nil
 }
 
-func CommandMap(cfg *api.Config) error {
+func CommandMap(cfg *api.Config, args []string) error {
 	locationData, err := api.GetLocationAreas(true, cfg)
 	if err != nil {
 		return err
@@ -68,7 +73,7 @@ func CommandMap(cfg *api.Config) error {
 	return nil
 }
 
-func CommandMapB(cfg *api.Config) error {
+func CommandMapB(cfg *api.Config, args []string) error {
 	locationData, err := api.GetLocationAreas(false, cfg)
 	if err != nil {
 		return err
@@ -76,6 +81,30 @@ func CommandMapB(cfg *api.Config) error {
 
 	for _, location := range locationData.Results {
 		fmt.Printf("%v\n", location.Name)
+	}
+
+	return nil
+}
+
+func CommandExplore(cfg *api.Config, args []string) error {
+	if len(args) > 1 || len(args) < 1 {
+		return fmt.Errorf("invalid argument: Try explore <location-area>")
+	}
+
+	pokemonData, err := api.GetLocationAreaPokemons(args[0], cfg)
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("Exploring %v...\n", args[0])
+	
+	if len(pokemonData.PokemonEncounters) == 0 {
+		fmt.Printf("None was found...\n")
+	} else {
+		fmt.Printf("Found pokemon:\n")
+		for _, pokemonEncounter := range pokemonData.PokemonEncounters {
+			fmt.Printf(" - %v\n", pokemonEncounter.Pokemon.Name)
+		}
 	}
 
 	return nil

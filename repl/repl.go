@@ -42,7 +42,7 @@ func Start() {
 			continue
 		}
 
-		err := command.Callback(cfg)
+		err := command.Callback(cfg, words[1:])
 		if err != nil {
 			fmt.Printf("Error occurred: %v\n", err)
 		}
