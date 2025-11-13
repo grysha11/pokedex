@@ -4,11 +4,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"github.com/grysha11/pokedex/internal/pokecache"
 )
 
 type Config struct {
 	NextLocationArea	*string
 	PrevLocationArea	*string
+	PokeCache			*pokecache.Cache
 }
 
 type LocationArea struct {
@@ -33,6 +35,19 @@ func GetLocationAreas(forward bool, cfg *Config) (LocationArea, error) {
 		url = *cfg.NextLocationArea
 	} else {
 		url = *cfg.PrevLocationArea
+	}
+
+	if data, ok := cfg.PokeCache.Get(url); ok {
+		var location LocationArea
+		err := json.Unmarshal(data, &location)
+		if err != nil {
+		return LocationArea{}, err
+		}
+
+		cfg.NextLocationArea = location.Next
+		cfg.PrevLocationArea = location.Previous
+
+		return location, nil
 	}
 
 	client := &http.Client{}

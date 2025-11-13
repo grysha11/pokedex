@@ -4,16 +4,21 @@ import (
 	"fmt"
 	"bufio"
 	"os"
+	"time"
 	"github.com/grysha11/pokedex/util"
 	"github.com/grysha11/pokedex/cmd"
 	"github.com/grysha11/pokedex/api"
+	"github.com/grysha11/pokedex/internal/pokecache"
 )
 
 func initConfig() (*api.Config) {
 	initialURL := "https://pokeapi.co/api/v2/location-area/"
+	cache := pokecache.NewCache(5 * time.Minute)
+
 	cfg := &api.Config{
-		NextLocationArea: &initialURL,
-		PrevLocationArea: nil,
+		NextLocationArea:	&initialURL,
+		PrevLocationArea:	nil,
+		PokeCache:			cache,
 	}
 	return cfg
 }
