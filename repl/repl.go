@@ -19,6 +19,7 @@ func initConfig() (*api.Config) {
 		NextLocationArea:	&initialURL,
 		PrevLocationArea:	nil,
 		PokeCache:			cache,
+		Pokedex:			make(map[string]api.PokemonData),
 	}
 	return cfg
 }

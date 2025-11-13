@@ -2,7 +2,9 @@ package cmd
 
 import (
 	"fmt"
+	"math/rand"
 	"os"
+	"time"
 	"github.com/grysha11/pokedex/api"
 )
 
@@ -41,6 +43,11 @@ func init() {
 			Description:	"Displays list of pokemons avaliable in given location area",
 			Callback:		CommandExplore,
 		},
+		"catch": {
+			Name:			"catch",
+			Description:	"Gives a chance to catch a specific pokemon",
+			Callback:		CommandCatch,
+		},
 	}
 }
 
@@ -57,6 +64,9 @@ func CommandHelp(cfg *api.Config, args []string) error {
 	for _, cmd := range Cmds {
 		fmt.Printf(" %s: %s\n", cmd.Name, cmd.Description)
 	}
+
+	fmt.Printf("\n")
+
 	return nil
 }
 
@@ -87,7 +97,7 @@ func CommandMapB(cfg *api.Config, args []string) error {
 }
 
 func CommandExplore(cfg *api.Config, args []string) error {
-	if len(args) > 1 || len(args) < 1 {
+	if len(args) != 1 {
 		return fmt.Errorf("invalid argument: Try explore <location-area>")
 	}
 
@@ -109,3 +119,40 @@ func CommandExplore(cfg *api.Config, args []string) error {
 
 	return nil
 }
+
+func CommandCatch(cfg *api.Config, args []string) error {
+	if len(args) != 1 {
+		return fmt.Errorf("invalid argument: Try catch <pokemon-name>")
+	}
+
+	pokemon, err := api.GetPokemonData(args[0], cfg)
+	if err != nil {
+		return err
+	}
+
+	if _, ok := cfg.Pokedex[args[0]]; ok {
+		fmt.Printf("You already have this pokemon!\n")
+		return nil
+	}
+
+	fmt.Printf("Throwing a Pokeball at %v...\n", args[0])
+	
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+
+	const maxDifficulty = 500
+
+	catchChance := maxDifficulty - pokemon.BaseExperience
+	if catchChance < 0 {
+		catchChance = 0
+	}
+
+	random := r.Intn(maxDifficulty)
+	if random < catchChance {
+		fmt.Printf("%v was caught!\n", args[0])
+		cfg.Pokedex[args[0]] = pokemon
+	} else {
+		fmt.Printf("%v escaped!\n", args[0])
+	}
+
+	return nil
+} 
